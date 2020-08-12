@@ -1,0 +1,50 @@
+{% if page.debug.variables %}
+  {% assign filteredout = "output, excerpt, content, docs, documents, pages, html_pages, previous, next" | split: ", " %}
+  <ul>
+    {% for i in page.debug.variables %}
+      <li><a href="{{ "#jekyll-debug-" | append: i }}">{{ i }}</a></li>
+    {% endfor %}
+  </ul>
+  {% for variable in page.debug.variables %}
+    <h2>{{ variable }}</h2>
+    {% assign varsplit = variable | split: "." %}
+    {% if varsplit.size > 1 %}
+      {% assign multivartest = true %}
+      {% assign firstVar = varsplit.first %}
+      {% if firstVar.first %}
+        {% assign multivar = firstVar %}
+      {% else %}
+        {% assign multivar = [firstVar] %}
+      {% endif %}
+      {% for eachvar in varsplit %}
+        {% if forloop.first %}
+          {% continue %}
+        {% endif %}
+        {% if [multivar][eachvar]first %}
+          {% assign multivar = [multivar][eachvar] %}
+        {% else %}
+          {% assign multivar = multivar[eachvar] %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    <pre id="jekyll-debug-{{ variable }}"></pre>
+    <script>
+      function replacer(key, value) {
+        {% for filter in filteredout %}
+          if (key === "{{ filter }}") {
+            return "FILTERED";
+          }
+        {% endfor %}
+        return value;
+      }
+      {% if multivartest %}
+        var obj = JSON.parse(decodeURIComponent("{{ multivar | jsonify | uri_escape }}"));
+      {% else %}
+        var obj = JSON.parse(decodeURIComponent("{{ [variable] | jsonify | uri_escape }}"));
+      {% endif %}
+      var pretty_json = JSON.stringify(obj, null, 4);
+      document.getElementById("jekyll-debug-{{ variable }}").textContent = pretty_json;
+    </script>
+    {% assign multivartest = false %}
+  {% endfor %}
+{% endif %}

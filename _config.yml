@@ -1,0 +1,4 @@
+exclude:
+  - makefile
+timezone: UTC
+show_dir_listing: true
